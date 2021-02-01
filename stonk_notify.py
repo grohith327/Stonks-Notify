@@ -8,6 +8,7 @@ import yfinance as yf
 import argparse
 import logging
 import sys
+from datetime import datetime
 
 logging.basicConfig(
     stream=sys.stdout,
@@ -33,21 +34,35 @@ n_cores = multiprocessing.cpu_count()
 def stonk_checker(stonk, webhook_url, update_freq):
     notification_sent = False
     while True:
-        stock_data = yf.download(tickers=stonk["ticker"], period="1d", interavl="1m")
+        stock_data = yf.download(
+            tickers=stonk["ticker"], period="1d", interval="1m", progress=False
+        )
         row = stock_data.iloc[-1]
         logging.info("Stock: {}, Current Price: {}".format(stonk["ticker"], row.Open))
+
         contents = {}
         if row.Open >= stonk["high"]:
             contents["text"] = (
-                "The value of stock `{}` crossed above your threshold value `{}` 🎉. It is currently priced at `{}`"
-            ).format(stonk["ticker"], stonk["high"], row.Open)
+                "[{}]: The value of stock `{}` crossed above your threshold value `{}` 🎉. It is currently priced at `{}`"
+            ).format(
+                datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+                stonk["ticker"],
+                stonk["high"],
+                row.Open,
+            )
             requests.post(webhook_url, json.dumps(contents))
             notification_sent = True
             logging.info("Slack Notification: " + contents["text"])
+
         elif row.Open <= stonk["low"]:
             contents["text"] = (
-                "The value of stock `{}` is below your threshold value `{}` 😟. It is currently priced at `{}`"
-            ).format(stonk["ticker"], stonk["low"], row.Open)
+                "[{}]: The value of stock `{}` is below your threshold value `{}` 😟. It is currently priced at `{}`"
+            ).format(
+                datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+                stonk["ticker"],
+                stonk["low"],
+                row.Open,
+            )
             requests.post(webhook_url, json.dumps(contents))
             notification_sent = True
             logging.info("Slack Notification: " + contents["text"])
