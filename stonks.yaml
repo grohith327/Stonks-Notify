@@ -1,0 +1,10 @@
+webhook_url: <enter the webhook url to your workspace>
+update_frequency: 1 ## provide value in mins
+stonk_1:
+  ticker: TSLA
+  high: 795
+  low: 790
+stonk_2:
+  ticker: AAPL
+  high: 132
+  low: 130
